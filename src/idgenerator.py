@@ -10,7 +10,7 @@ class IDGenerator(ABC):
 
 class AlphaNumericIDGenerator(IDGenerator):
   def get_id(self):
-    return uuid.uuid1()
+    return str(uuid.uuid1())
 
 class NumericIDGenerator(IDGenerator):
   def get_id(self):
