@@ -1,10 +1,25 @@
 import json
 from flask import request, Flask, jsonify, make_response
+import os
 
 import datastructure
 import idgenerator
 
 app = Flask(__name__)
+
+def load_environment():
+  try:
+    env_var = os.environ['WORKING_ENV']
+  except:
+    env_var = 'dev_env.json'
+    
+  print(env_var)
+
+  with open(env_var) as f:
+    env_values = json.loads(f.read())
+    print(env_values)
+  
+  return env_values
 
 @app.route('/', methods=['GET'])
 def index():
@@ -78,6 +93,11 @@ def upload_data():
   
 if __name__ == '__main__':
   print('Starting service...')
+  
+  # load environment
+  env_variables = load_environment()
+  
+  print(env_variables["database_url"])
   
   # check if there are data files for patients and experiments available
   ds = datastructure.DataStorage()
