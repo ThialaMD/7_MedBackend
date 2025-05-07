@@ -5,6 +5,8 @@ import os
 import datastructure
 import idgenerator
 
+from memory_profiler import profile
+
 app = Flask(__name__)
 
 def load_environment():
@@ -20,6 +22,13 @@ def load_environment():
     print(env_values)
   
   return env_values
+
+big_data = []
+
+@app.route('/memory', methods=['GET'])
+def memory():
+  big_data.append(1)
+  return json.dumps({'status' : "true"})
 
 @app.route('/', methods=['GET'])
 def index():
@@ -84,13 +93,14 @@ def upload_data():
   ds = datastructure.DataStorage()
   if request.method == 'POST':
     body = request.get_json()
-    patient_id = body['patient_id']
-    experiment_id = body['experiment_id']
-    data = body['data']
+    print(body)
+    patient_id = body['patientId']
+    experiment_id = body['experimentId']
+    data = body
     data_obj = datastructure.DataPoint(patient_id, experiment_id, data)
     ds.add_data(data_obj)
     return make_response('', 200)
-  
+
 if __name__ == '__main__':
   print('Starting service...')
   
@@ -103,4 +113,4 @@ if __name__ == '__main__':
   ds = datastructure.DataStorage()
   ds.load_data()
   
-  app.run(host='0.0.0.0', debug=True)
+  app.run(host='0.0.0.0', port=5000, debug=True)
