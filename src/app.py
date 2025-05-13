@@ -1,6 +1,9 @@
 import json
 from flask import request, Flask, jsonify, make_response
 import os
+import random
+import psutil
+import logging
 
 import datastructure
 import idgenerator
@@ -9,108 +12,128 @@ from memory_profiler import profile
 
 app = Flask(__name__)
 
-def load_environment():
-  try:
-    env_var = os.environ['WORKING_ENV']
-  except:
-    env_var = 'dev_env.json'
-    
-  print(env_var)
 
-  with open(env_var) as f:
-    env_values = json.loads(f.read())
-    print(env_values)
-  
-  return env_values
+def load_environment():
+    try:
+        env_var = os.environ['WORKING_ENV']
+    except:
+        env_var = 'dev_env.json'
+
+    with open(env_var) as f:
+        env_values = json.loads(f.read())
+
+    return env_values
+    #return None
+
 
 big_data = []
 
+
 @app.route('/memory', methods=['GET'])
 def memory():
-  big_data.append(1)
-  return json.dumps({'status' : "true"})
+    for i in range(0, 1000000):
+        big_data.append(random.random())
+
+    process = psutil.Process()
+    #return json.dumps({'size': len(big_data),
+    #                   'memory': process.memory_info().rss / (1024.0 ** 2)})
+    return json.dumps({'size': len(big_data)})
+
 
 @app.route('/', methods=['GET'])
 def index():
-  return json.dumps({'name' : 'David',
-  'mail' : 'david.herzig@roche.com',
-  'System' : 'Digital Biomarker Course Project',
-  'Server Component' : 'v1_0_0',
-  'Date' : '7-Apr-2025'})
+    return json.dumps({'name': 'David',
+                       'mail': 'david.herzig@roche.com',
+                       'System': 'Digital Biomarker Course Project',
+                       'Server Component': 'v1_0_0',
+                       'Date': '7-Apr-2025'})
+
 
 @app.route('/experiment', methods=['POST', 'GET'])
 def experiment_action():
-  ds = datastructure.DataStorage()
-  if request.method == 'POST':
-    body = request.get_json()
-    name = body['name']
-    experiment_obj = datastructure.Experiment(name)
-    ds.add_experiment(experiment_obj)
-    return jsonify(experiment_obj.__dict__)
-  if request.method == 'GET':
-    id = request.args.get('id')
-    result = ds.get_experiment(id)
-    if result == None:
-      return make_response(jsonify('experiment not found'), 404)
-    else:
-      return make_response(jsonify(result.__dict__), 200)
-  
+    ds = datastructure.DataStorage()
+    if request.method == 'POST':
+        body = request.get_json()
+        name = body['name']
+        experiment_obj = datastructure.Experiment(name)
+        ds.add_experiment(experiment_obj)
+        return jsonify(experiment_obj.__dict__)
+    if request.method == 'GET':
+        id = request.args.get('id')
+        result = ds.get_experiment(id)
+        if result == None:
+            return make_response(jsonify('experiment not found'), 404)
+        else:
+            return make_response(jsonify(result.__dict__), 200)
+
+
 @app.route('/patient', methods=['POST', 'GET'])
 def patient_action():
-  ds = datastructure.DataStorage()
-  if request.method == 'POST':
-    body = request.get_json()
-    name = body['name']
-    patient_obj = datastructure.Patient(name)
-    ds.add_patient(patient_obj)
-    return jsonify(patient_obj.__dict__)
-  if request.method == 'GET':
-    id = request.args.get('id')
-    result = ds.get_patient(id)
-    if result == None:
-      return make_response(jsonify('patient not found'), 404)
-    else:
-      return make_response(jsonify(result.__dict__), 200)
+    ds = datastructure.DataStorage()
+    if request.method == 'POST':
+        body = request.get_json()
+        name = body['name']
+        patient_obj = datastructure.Patient(name)
+        ds.add_patient(patient_obj)
+        return jsonify(patient_obj.__dict__)
+    if request.method == 'GET':
+        id = request.args.get('id')
+        result = ds.get_patient(id)
+        if result == None:
+            return make_response(jsonify('patient not found'), 404)
+        else:
+            return make_response(jsonify(result.__dict__), 200)
+
 
 @app.route('/patients', methods=['GET'])
 def patients_action():
-  ds = datastructure.DataStorage()
-  return json.dumps(ds.patients, cls=datastructure.PatientEncoder)
-  
+    ds = datastructure.DataStorage()
+    return json.dumps(ds.patients, cls=datastructure.PatientEncoder)
+
+
 @app.route('/experiments', methods=['GET'])
 def experiments_action():
-  ds = datastructure.DataStorage()
-  return json.dumps(ds.experiments, cls=datastructure.ExperimentEncoder)
-  
+    ds = datastructure.DataStorage()
+    return json.dumps(ds.experiments, cls=datastructure.ExperimentEncoder)
+
+
 @app.route('/store', methods=['POST'])
 def store_data():
-  ds = datastructure.DataStorage()
-  ds.store_data()
-  return make_response(jsonify("True"), 200)
-  
+    ds = datastructure.DataStorage()
+    ds.store_data()
+    return make_response(jsonify("True"), 200)
+
+
 @app.route('/upload', methods=['POST'])
 def upload_data():
-  ds = datastructure.DataStorage()
-  if request.method == 'POST':
-    body = request.get_json()
-    print(body)
-    patient_id = body['patientId']
-    experiment_id = body['experimentId']
-    data = body
-    data_obj = datastructure.DataPoint(patient_id, experiment_id, data)
-    ds.add_data(data_obj)
-    return make_response('', 200)
+    ds = datastructure.DataStorage()
+    if request.method == 'POST':
+        body = request.get_json()
+        print(body)
+        patient_id = body['patientId']
+        experiment_id = body['experimentId']
+        data = body
+        data_obj = datastructure.DataPoint(patient_id, experiment_id, data)
+        ds.add_data(data_obj)
+        return make_response('', 200)
+
 
 if __name__ == '__main__':
-  print('Starting service...')
-  
-  # load environment
-  env_variables = load_environment()
-  
-  print(env_variables["database_url"])
-  
-  # check if there are data files for patients and experiments available
-  ds = datastructure.DataStorage()
-  ds.load_data()
-  
-  app.run(host='0.0.0.0', port=5000, debug=True)
+    print('Starting service...')
+
+    logging.basicConfig(filename="backend_service.log", encoding='utf-8', level=logging.DEBUG)
+
+    logging.debug('Application started...')
+
+    # load environment
+    env_variables = load_environment()
+
+    assert env_variables is not None
+
+    print(env_variables["database_url"])
+
+    # check if there are data files for patients and experiments available
+    ds = datastructure.DataStorage()
+    ds.load_data()
+
+    app.run(host='0.0.0.0', port=5000, debug=True)
