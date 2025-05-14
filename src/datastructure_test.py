@@ -4,7 +4,7 @@ import datastructure
 
 class TestPatient(unittest.TestCase):
 
-    def test_create_patient(self):
+    def test_add_patient(self):
         obj = datastructure.Patient('David Herzig')
         self.assertTrue(len(obj.id) > 0)
 

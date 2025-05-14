@@ -22,8 +22,8 @@ def load_environment():
     with open(env_var) as f:
         env_values = json.loads(f.read())
 
+    logging.info(env_values)
     return env_values
-    #return None
 
 
 big_data = []
@@ -35,13 +35,14 @@ def memory():
         big_data.append(random.random())
 
     process = psutil.Process()
-    #return json.dumps({'size': len(big_data),
-    #                   'memory': process.memory_info().rss / (1024.0 ** 2)})
-    return json.dumps({'size': len(big_data)})
+    return json.dumps({'size': len(big_data),
+                       'memory': process.memory_info().rss / (1024.0 ** 2)})
+    #return json.dumps({'size': len(big_data)})
 
 
 @app.route('/', methods=['GET'])
 def index():
+    """Simple method to get some information about the software"""
     return json.dumps({'name': 'David',
                        'mail': 'david.herzig@roche.com',
                        'System': 'Digital Biomarker Course Project',
@@ -51,6 +52,7 @@ def index():
 
 @app.route('/experiment', methods=['POST', 'GET'])
 def experiment_action():
+    logging.debug('experiment endpoint called...')
     ds = datastructure.DataStorage()
     if request.method == 'POST':
         body = request.get_json()
@@ -87,6 +89,7 @@ def patient_action():
 
 @app.route('/patients', methods=['GET'])
 def patients_action():
+    logging.warning("some warinng statements")
     ds = datastructure.DataStorage()
     return json.dumps(ds.patients, cls=datastructure.PatientEncoder)
 
@@ -129,8 +132,6 @@ if __name__ == '__main__':
     env_variables = load_environment()
 
     assert env_variables is not None
-
-    print(env_variables["database_url"])
 
     # check if there are data files for patients and experiments available
     ds = datastructure.DataStorage()
