@@ -8,7 +8,7 @@ class Patient(object):
         self.name = name
         if patient_id is None:
             id_gen = idgenerator.AlphaNumericIDGenerator()
-            self.id = id_gen.get_id()
+            #self.id = id_gen.get_id()
         else:
             self.id = patient_id
 
