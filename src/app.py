@@ -1,5 +1,6 @@
 import json
 from flask import request, Flask, jsonify, make_response
+from flask_httpauth import HTTPBasicAuth
 import os
 import random
 import psutil
@@ -11,7 +12,16 @@ import idgenerator
 from memory_profiler import profile
 
 app = Flask(__name__)
+auth = HTTPBasicAuth()
 
+users = {
+    "user" : "password"
+}
+
+@auth.verify_password
+def verify_password(username, password):
+    if username in users and users[username] == password:
+        return username
 
 def load_environment():
     try:
@@ -41,6 +51,7 @@ def memory():
 
 
 @app.route('/', methods=['GET'])
+@auth.login_required
 def index():
     """Simple method to get some information about the software"""
     return json.dumps({'name': 'David',
@@ -124,7 +135,7 @@ def upload_data():
 if __name__ == '__main__':
     print('Starting service...')
 
-    logging.basicConfig(filename="backend_service.log", encoding='utf-8', level=logging.DEBUG)
+    logging.basicConfig(filename="backend_service.log", encoding='utf-8', level=logging.INFO)
 
     logging.debug('Application started...')
 
