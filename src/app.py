@@ -1,27 +1,12 @@
 import json
 from flask import request, Flask, jsonify, make_response
-from flask_httpauth import HTTPBasicAuth
 import os
 import random
-import psutil
-import logging
 
 import datastructure
 import idgenerator
 
-from memory_profiler import profile
-
 app = Flask(__name__)
-auth = HTTPBasicAuth()
-
-users = {
-    "user" : "password"
-}
-
-@auth.verify_password
-def verify_password(username, password):
-    if username in users and users[username] == password:
-        return username
 
 def load_environment():
     try:
@@ -32,38 +17,21 @@ def load_environment():
     with open(env_var) as f:
         env_values = json.loads(f.read())
 
-    logging.info(env_values)
     return env_values
 
 
-big_data = []
-
-
-@app.route('/memory', methods=['GET'])
-def memory():
-    for i in range(0, 1000000):
-        big_data.append(random.random())
-
-    process = psutil.Process()
-    return json.dumps({'size': len(big_data),
-                       'memory': process.memory_info().rss / (1024.0 ** 2)})
-    #return json.dumps({'size': len(big_data)})
-
-
 @app.route('/', methods=['GET'])
-@auth.login_required
 def index():
     """Simple method to get some information about the software"""
     return json.dumps({'name': 'David',
-                       'mail': 'david.herzig@roche.com',
+                       'mail': 'fhnw@roche.ch',
                        'System': 'Digital Biomarker Course Project',
                        'Server Component': 'v1_0_0',
-                       'Date': '7-Apr-2025'})
+                       'Date': '7-Apr-2026'})
 
 
 @app.route('/experiment', methods=['POST', 'GET'])
 def experiment_action():
-    logging.debug('experiment endpoint called...')
     ds = datastructure.DataStorage()
     if request.method == 'POST':
         body = request.get_json()
@@ -100,7 +68,6 @@ def patient_action():
 
 @app.route('/patients', methods=['GET'])
 def patients_action():
-    logging.warning("some warinng statements")
     ds = datastructure.DataStorage()
     return json.dumps(ds.patients, cls=datastructure.PatientEncoder)
 
@@ -135,14 +102,8 @@ def upload_data():
 if __name__ == '__main__':
     print('Starting service...')
 
-    logging.basicConfig(filename="backend_service.log", encoding='utf-8', level=logging.INFO)
-
-    logging.debug('Application started...')
-
     # load environment
     env_variables = load_environment()
-
-    assert env_variables is not None
 
     # check if there are data files for patients and experiments available
     ds = datastructure.DataStorage()
