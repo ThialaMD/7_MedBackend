@@ -12,7 +12,7 @@ test:
     - cd src
     - pip install -r requirements.txt
   script:
-    - python -m coverage run -m datastructure_test
+    - python -m coverage run -m datastructuretest
     - coverage html
   artifacts:
         paths:
@@ -26,9 +26,10 @@ pages:
       - cd src
       - pip install -r requirements.txt
     script:
-      - python -m coverage run -m datastructure_test
+      - python -m coverage run -m datastructuretest
       - coverage html
       - mv htmlcov/ ../public/
     artifacts:
         paths:
             - public/
+            
