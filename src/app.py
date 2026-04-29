@@ -1,3 +1,4 @@
+from concurrent.futures import process
 import json
 from flask import request, Flask, jsonify, make_response
 import os
@@ -5,6 +6,10 @@ import random
 
 import datastructure
 import idgenerator
+import tracemalloc
+import psutil
+import os
+import logging
 
 app = Flask(__name__)
 
@@ -100,7 +105,12 @@ def upload_data():
 
 
 if __name__ == '__main__':
-    print('Starting service...')
+    logging.basicConfig(level=logging.DEBUG,
+        format='%(asctime)s %(message)s',
+        handlers=[logging.FileHandler("backendservice.log"),
+        logging.StreamHandler()])
+
+    logging.debug('Starting service...')
 
     # load environment
     env_variables = load_environment()
@@ -109,4 +119,4 @@ if __name__ == '__main__':
     ds = datastructure.DataStorage()
     ds.load_data()
 
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
