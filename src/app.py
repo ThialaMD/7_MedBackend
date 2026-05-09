@@ -1,19 +1,26 @@
+"""
+Exercise 07: Backend Service for Medical Data Collection.
+This module provides a Flask-based REST API to manage experiments and patient data.
+"""
+
 from concurrent.futures import process
 import json
-from flask import request, Flask, jsonify, make_response
-import os
-import random
-
-import datastructure
-import idgenerator
-import tracemalloc
-import psutil
-import os
 import logging
+import os
+from flask import request, Flask, jsonify, make_response
+
+#First part-party imports
+import datastructure
 
 app = Flask(__name__)
 
 def load_environment():
+    """
+    Loads the environment configuration from a JSON file.
+    Returns:
+        dict: The configuration values.
+    """
+
     try:
         env_var = os.environ['WORKING_ENV']
     except:
@@ -37,6 +44,7 @@ def index():
 
 @app.route('/experiment', methods=['POST', 'GET'])
 def experiment_action():
+    """Handles creating and retrieving experiments."""
     ds = datastructure.DataStorage()
     if request.method == 'POST':
         body = request.get_json()
@@ -55,7 +63,10 @@ def experiment_action():
 
 @app.route('/patient', methods=['POST', 'GET'])
 def patient_action():
+    """Handles creating and retrieving patient records."""
     ds = datastructure.DataStorage()
+    # TASK 6: Medical Audit Log
+    logging.info("AUDIT: Patient endpoint was accessed via %s", request.method)
     if request.method == 'POST':
         body = request.get_json()
         name = body['name']
@@ -78,20 +89,21 @@ def patients_action():
 
 
 @app.route('/experiments', methods=['GET'])
-def experiments_action():
+def experiments_action():   
     ds = datastructure.DataStorage()
     return json.dumps(ds.experiments, cls=datastructure.ExperimentEncoder)
 
 
 @app.route('/store', methods=['POST'])
 def store_data():
+    """Triggers persistent storage of collected data."""
     ds = datastructure.DataStorage()
     ds.store_data()
     return make_response(jsonify("True"), 200)
 
 
 @app.route('/upload', methods=['POST'])
-def upload_data():
+def upload_data():  
     ds = datastructure.DataStorage()
     if request.method == 'POST':
         body = request.get_json()
