@@ -14,6 +14,8 @@
 
 ***Performance & Robustness:** Executed performance benchmarks , integrated persistent logging mechanisms via log files , and added runtime assertions for defensive programming.
 
+***Logfile Location:** The logfile is generated dynamically at runtime on your local machine (it is excluded from Git via `.gitignore`). Look for `backend_service.log` (or your custom log name) inside your local working directory after spinning up the server.
+
 ***Testing & Version Control:** Implemented automated unit tests and established proper release versioning using Git tags after committing the final solution.
 
 Pylint Score:
